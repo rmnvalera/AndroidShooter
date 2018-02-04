@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     tools:context="com.example.roman.ball3activityv3.Ball3Activity">
 
     <org.opencv.android.JavaCameraView
@@ -12,6 +11,7 @@
         android:layout_height="fill_parent"
         android:visibility="gone"
         android:id="@+id/view"
+        opencv:show_fps="true"
         opencv:camera_id="any" />
 
 </android.support.constraint.ConstraintLayout>

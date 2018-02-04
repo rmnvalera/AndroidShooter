@@ -22,7 +22,14 @@ import org.opencv.core.Mat;
 
 
 public class Ball3Activity extends AppCompatActivity implements CvCameraViewListener2{
+
     private CameraBridgeViewBase mOpenCvCameraView;
+
+    private int                 mViewMode;
+    private static final int    VIEW_MODE_RGBA   = 0;
+    private static final int    VIEW_MODE_GRAY   = 1;
+    private static final int    VIEW_MODE_CANNY  = 2;
+    private static final int    VIEW_MODE_FEATURES = 5;
 
 
     @Override
@@ -57,15 +64,19 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         switch(id){
             case R.id.RGBA :
                 Log.i("Menu:", "RGBA");
+                mViewMode = VIEW_MODE_RGBA;
                 return true;
             case R.id.HSV:
                 Log.i("Menu:", "HSV");
+                mViewMode = VIEW_MODE_GRAY;
                 return true;
             case R.id.Thresholded:
                 Log.i("Menu:", "Thresholded");
+                mViewMode = VIEW_MODE_CANNY;
                 return true;
             case R.id.Ball:
                 Log.i("Menu:", "Ball");
+                mViewMode = VIEW_MODE_FEATURES;
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -85,6 +96,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         super.onResume();
         OpenCVLoader.initDebug();
         mOpenCvCameraView.enableView();
+//        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
     }
 
     public void onDestroy() {
