@@ -167,10 +167,10 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         Mat circles = new Mat(); // No need (and don't know how) to initialize it.
         // The function later will do it... (to a 1*N*CV_32FC3)
         array255.setTo(new Scalar(255));
-        Scalar hsv_min = new Scalar(0, 50, 50, 0);
-        Scalar hsv_max = new Scalar(6, 255, 255, 0);
-        Scalar hsv_min2 = new Scalar(175, 50, 50, 0);
-        Scalar hsv_max2 = new Scalar(179, 255, 255, 0);
+        Scalar hsv_min = new Scalar(18, 50, 50, 0);
+        Scalar hsv_max = new Scalar(20, 255, 255, 0);
+        Scalar hsv_min2 = new Scalar(20, 50, 50, 0);
+        Scalar hsv_max2 = new Scalar(30, 255, 255, 0);
         //double[] data=new double[3];
         // One way to select a range of colors by Hue
         Imgproc.cvtColor(mRgba, mHSV, Imgproc.COLOR_RGB2HSV,4);
