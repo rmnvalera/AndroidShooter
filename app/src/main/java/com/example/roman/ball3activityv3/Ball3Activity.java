@@ -25,8 +25,8 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import java.util.ArrayList;
-import java.util.List;
+//import java.util.ArrayList;
+//import java.util.List;
 //import com.karumi.dexter.Dexter;
 
 
@@ -82,7 +82,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.surface_view);
-        mOpenCvCameraView = findViewById(R.id.view);
+        mOpenCvCameraView = (CameraBridgeViewBase)findViewById(R.id.view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setMaxFrameSize(500,500);
         mOpenCvCameraView.setCvCameraViewListener(this);
@@ -133,8 +133,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         super.onResume();
         OpenCVLoader.initDebug();
         mOpenCvCameraView.enableView();
-//        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, mLoaderCallback);
+//        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, this, mLoaderCallback);
     }
 
     public void onDestroy() {
@@ -164,7 +163,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         final int viewMode = mViewMode;
         mRgba = inputFrame.rgba();
         if (viewMode==VIEW_MODE_RGBA) return mRgba;
-        List<Mat> lhsv = new ArrayList<>(3);
+//        List<Mat> lhsv = new ArrayList<>(3);
         Mat circles = new Mat(); // No need (and don't know how) to initialize it.
         // The function later will do it... (to a 1*N*CV_32FC3)
         array255.setTo(new Scalar(255));
@@ -173,35 +172,33 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         Scalar hsv_min2 = new Scalar(20, 50, 50, 0);
         Scalar hsv_max2 = new Scalar(30, 255, 255, 0);
 
-        //double[] data=new double[3];
+
         // One way to select a range of colors by Hue
         Imgproc.cvtColor(mRgba, mHSV, Imgproc.COLOR_RGB2HSV,4);
-        if (viewMode==VIEW_MODE_GRAY) return mHSV;
+            if (viewMode==VIEW_MODE_GRAY) return mHSV;
         Core.inRange(mHSV, hsv_min, hsv_max, mThresholded);
         Core.inRange(mHSV, hsv_min2, hsv_max2, mThresholded2);
         Core.bitwise_or(mThresholded, mThresholded2, mThresholded);
-        /*Core.line(mRgba, new Point(150,50), new Point(202,200), new Scalar(100,10,10)CV_BGR(100,10,10), 3);
-             Core.circle(mRgba, new Point(210,210), 10, new Scalar(100,10,10),3);
-             data=mRgba.get(210, 210);
-             Core.putText(mRgba,String.format("("+String.valueOf(data[0])+","+String.valueOf(data[1])+","+String.valueOf(data[2])+")"),new Point(30, 30) , 3 //FONT_HERSHEY_SCRIPT_SIMPLEX
-                   ,1.0,new Scalar(100,10,10,255),3);*/
-        Core.split(mHSV, lhsv); // We get 3 2D one channel Mats
-        Mat S = lhsv.get(1);
-        Mat V = lhsv.get(2);
-        Core.subtract(array255, S, S);
-        Core.subtract(array255, V, V);
-        S.convertTo(S, CvType.CV_32F);
-        V.convertTo(V, CvType.CV_32F);
-        Core.magnitude(S, V, distance);
+
+          //don't know this is need
+/////////////////////////////////////////////////////////////////////
+//        Core.split(mHSV, lhsv); // We get 3 2D one channel Mats
+//        Mat S = lhsv.get(1);
+//        Mat V = lhsv.get(2);
+//        Core.subtract(array255, S, S);
+//        Core.subtract(array255, V, V);
+//        S.convertTo(S, CvType.CV_32F);
+//        V.convertTo(V, CvType.CV_32F);
+//        Core.magnitude(S, V, distance);
+/////////////////////////////////////////////////////////////////////
         Core.inRange(distance,new Scalar(0.0), new Scalar(200.0), mThresholded2);
         Core.bitwise_and(mThresholded, mThresholded2, mThresholded);
- /*       if (viewMode==VIEW_MODE_CANNY){
-             Imgproc.cvtColor(mThresholded, mRgba, Imgproc.COLOR_GRAY2RGB, 4);
-             return mRgba;
-        }*/
+
+
         // Apply the Hough Transform to find the circles
         Imgproc.GaussianBlur(mThresholded, mThresholded, new Size(9,9),0,0);
         Imgproc.HoughCircles(mThresholded, circles, Imgproc.CV_HOUGH_GRADIENT, 2, mThresholded.height()/4, 500, 50, 0, 0);
+
         if (viewMode==VIEW_MODE_CANNY){
 //            Imgproc.Canny(mThresholded, mThresholded, 500, 250); // This is not needed.
             // It is just for display
@@ -220,6 +217,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                 Imgproc.ellipse( mRgba, center, new Size((double)data2[i+2], (double)data2[i+2]), 0, 0, 360, new Scalar( 255, 0, 255 ), 4, 8, 0 );
             }
         }
+
         return mRgba;
     }
 }
