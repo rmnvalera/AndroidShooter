@@ -6,12 +6,53 @@
     android:layout_height="match_parent"
     tools:context="com.example.roman.ball3activityv3.Ball3Activity">
 
+
     <org.opencv.android.JavaCameraView
+        android:id="@+id/view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:visibility="gone"
-        android:id="@+id/view"
-        opencv:show_fps="true"
-        opencv:camera_id="any" />
+        opencv:camera_id="any"
+        opencv:layout_constraintBottom_toTopOf="parent"
+        opencv:layout_constraintEnd_toStartOf="parent"
+        opencv:layout_constraintStart_toStartOf="parent"
+        opencv:layout_constraintTop_toTopOf="parent"
+        opencv:show_fps="true" />
+
+    <ImageView
+        android:id="@+id/aimLay"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_centerHorizontal="true"
+        opencv:layout_constraintBottom_toBottomOf="parent"
+        opencv:layout_constraintEnd_toEndOf="parent"
+        opencv:layout_constraintStart_toStartOf="parent"
+        opencv:layout_constraintTop_toTopOf="parent"
+        opencv:srcCompat="@drawable/aim" />
+
+    <Button
+        android:id="@+id/btFire"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="306dp"
+        android:layout_marginTop="306dp"
+        android:onClick="onClickFire"
+        android:text="Fire"
+        opencv:layout_constraintBottom_toBottomOf="parent"
+        opencv:layout_constraintEnd_toEndOf="parent"
+        opencv:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViweFire"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="50dp"
+        android:text="0"
+        android:textColor="?attr/colorError"
+        opencv:layout_constraintStart_toStartOf="parent"
+        opencv:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
+
+

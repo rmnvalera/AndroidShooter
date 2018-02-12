@@ -1,14 +1,25 @@
 package com.example.roman.ball3activityv3;
 
 //import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.Dimension;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 //import android.webkit.PermissionRequest;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -33,6 +44,19 @@ import org.opencv.imgproc.Imgproc;
 public class Ball3Activity extends AppCompatActivity implements CvCameraViewListener2{
     private static final String  TAG = "OCVSample::Activity";
     private CameraBridgeViewBase mOpenCvCameraView;
+
+    private ImageView imAim;
+    private int widthDisplay;
+    private int heigtDisplay;
+    private int widthCam;
+    private int heigtCam;
+
+    private boolean onBtFire = false;
+
+    private TextView textViewFire;
+    private int logViewFire = 0;
+//    private Handler handler;
+//    private Animation aimAnim;
 
     private int                 mViewMode;
     private static final int    VIEW_MODE_RGBA   = 0;
@@ -68,6 +92,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
     };
 
 
+    @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -86,6 +111,21 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setMaxFrameSize(500,500);
         mOpenCvCameraView.setCvCameraViewListener(this);
+
+        imAim = (ImageView)findViewById(R.id.aimLay);
+        textViewFire = (TextView)findViewById(R.id.textViweFire);
+//        handler = new Handler() {
+//            @Override
+//            public void handleMessage(Message msg) {
+//                String text = (String) msg.obj;
+//                textViewFire.setText( text );
+//            }
+//        };
+        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+        widthDisplay = display.getWidth();
+        heigtDisplay = display.getHeight();
+        widthCam = widthDisplay / 480;
+        heigtCam = heigtDisplay / 360;
     }
 
     @Override
@@ -94,6 +134,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -209,15 +250,46 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         int rows = circles.rows();
         int elemSize = (int)circles.elemSize(); // Returns 12 (3 * 4bytes in a float)
         float[] data2 = new float[rows * elemSize/4];
+
         if (data2.length>0){
             circles.get(0, 0, data2); // Points to the first element and reads the whole thing
             // into data2
             for(int i=0; i<data2.length; i=i+3) {
                 Point center= new Point(data2[i], data2[i+1]);
                 Imgproc.ellipse( mRgba, center, new Size((double)data2[i+2], (double)data2[i+2]), 0, 0, 360, new Scalar( 255, 0, 255 ), 4, 8, 0 );
+//                imAim.setY((float) center.y - imAim.getY());
+                if(Math.pow((imAim.getX() - (center.x * widthCam) ),2) + Math.pow((imAim.getY() - (center.y * heigtCam)),2) < Math.pow(100,2)){
+
+                    if(onBtFire){
+                        logViewFire = logViewFire + 1;
+
+//                        Message msg = new Message();
+//                        msg.obj = " " + logViewFire;
+//                        handler.sendMessage(msg);
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textViewFire.setText("hit the target:" + logViewFire);
+                            }
+                        });
+
+                        Log.i("AIM:", "YESSSSSSSSSSSSSSS: " + logViewFire);
+                        onBtFire = false;
+                    }
+                }else{
+                    onBtFire = false;
+                    Log.i("AIM:", "NOOOOOOOOOOOOOOOO");
+                }
             }
         }
-
         return mRgba;
+    }
+
+
+    public void onClickFire(View view) {
+        if(!onBtFire){
+            onBtFire = true;
+        }
     }
 }
