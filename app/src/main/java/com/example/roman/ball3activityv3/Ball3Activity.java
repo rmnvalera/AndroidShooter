@@ -86,7 +86,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
     private DatabaseReference   myRef;
 
     FirebaseUser user = mAuth.getInstance().getCurrentUser();//
-//    FirebaseListAdapter mAdapter;
+    UserData userData;
 
 
     // Initialize OpenCV manager.
@@ -137,9 +137,11 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         textUser = (TextView)findViewById(R.id.textUser);
 ///////////////////////
         if(user != null){
+
             textUser.setText(user.getEmail());
         }
-//        myRef = FirebaseDatabase.getInstance().getReference();
+        myRef = FirebaseDatabase.getInstance().getReference();
+        userData = new UserData(user.getEmail(), "0", logViewShots);
 ///////////////////////
         chronometer = (Chronometer)findViewById(R.id.timerChononom);
         chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
@@ -346,16 +348,25 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                                 textViewFire.setText("Hit the target:" + logViewFire);
                             }
                         });
-
-                        Log.i("AIM:", "YESSSSSSSSSSSSSSS: " + logViewFire);
+                        if(logViewFire == 10){
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(Ball3Activity.this, "You win. Time: " + chronometer.getText(), Toast.LENGTH_SHORT).show();
+                                    userData.Time = chronometer.getText().toString();
+                                    userData.Shorts = logViewShots;
+                                    myRef.child(user.getUid()).child("data").push().setValue(userData);
+                                }
+                            });
+                        }
                         onBtFire = false;
                     }
                 }else{
                     onBtFire = false;
-                    Log.i("AIM:", "NOOOOOOOOOOOOOOOO");
                 }
 
-                Log.i("MyLog: ", "X: "+ imAim.getX() + "; Y: " + imAim.getY() + " || width = " + widthDisplay/2 + "; Heugh = " + heigtDisplay/2 + " || R = " + (double)data2[i+2] + "|| Size =" + new Size((double)data2[i+2], (double)data2[i+2]));
+                // log coordination
+//                Log.i("MyLog: ", "X: "+ imAim.getX() + "; Y: " + imAim.getY() + " || width = " + widthDisplay/2 + "; Heugh = " + heigtDisplay/2 + " || R = " + (double)data2[i+2] + "|| Size =" + new Size((double)data2[i+2], (double)data2[i+2]));
             }
         }
         return mRgba;
@@ -371,4 +382,5 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
             onBtFire = true;
         }
     }
+
 }
