@@ -4,6 +4,86 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     tools:context="com.example.roman.ball3activityv3.MainActivity">
+
+    <EditText
+        android:id="@+id/editLogin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="34dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:textAlignment="viewStart"
+        app:layout_constraintEnd_toEndOf="@+id/btSignIn"
+        app:layout_constraintStart_toStartOf="@+id/btSignUp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:hint="@string/login" />
+
+    <EditText
+        android:id="@+id/editPass"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:password="true"
+        android:hint="@string/passord"
+        app:layout_constraintEnd_toEndOf="@+id/editLogin"
+        app:layout_constraintStart_toStartOf="@+id/editLogin"
+        app:layout_constraintTop_toBottomOf="@+id/editLogin"
+        android:singleLine="true"
+        />
+
+    <Button
+        android:id="@+id/btSignUp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="74dp"
+        android:layout_marginTop="14dp"
+        android:text="Sign Up"
+        app:layout_constraintEnd_toStartOf="@+id/btSignIn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editPass" />
+
+    <Button
+        android:id="@+id/btSignIn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="74dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="13dp"
+        android:onClick="onClick"
+        android:text="Sign In"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btSignUp"
+        app:layout_constraintTop_toBottomOf="@+id/editPass" />
+
+    <Button
+        android:id="@+id/btAnonLogIn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="23dp"
+        android:text="Anonymous Log In"
+        app:layout_constraintEnd_toEndOf="@+id/btSignIn"
+        app:layout_constraintStart_toStartOf="@+id/btSignUp"
+        app:layout_constraintTop_toBottomOf="@+id/btSignUp" />
+
+    <!--<TextView-->
+        <!--android:id="@+id/textLogin"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="20dp"-->
+        <!--android:text="Login"-->
+        <!--app:layout_constraintBottom_toTopOf="@+id/editLogin"-->
+        <!--app:layout_constraintStart_toStartOf="@+id/editLogin" />-->
+
+    <!--<TextView-->
+        <!--android:id="@+id/textPass"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Password"-->
+        <!--app:layout_constraintBottom_toTopOf="@+id/editPass"-->
+        <!--app:layout_constraintStart_toStartOf="@+id/editPass" />-->
 
 </android.support.constraint.ConstraintLayout>

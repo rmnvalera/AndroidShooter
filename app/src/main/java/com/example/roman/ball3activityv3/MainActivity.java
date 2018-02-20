@@ -1,9 +1,12 @@
 package com.example.roman.ball3activityv3;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = mAuth.getCurrentUser();
                 if(user != null){
+//                    Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
+//                    startActivity(intent);
                     //sigend in
                 }else{
                     //signed out
@@ -47,6 +52,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         findViewById(R.id.btSignIn).setOnClickListener(this);
         findViewById(R.id.btSignUp).setOnClickListener(this);
+
+//        FirebaseUser user = mAuth.getCurrentUser();
+//        if(user != null) {
+//            Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
+//            startActivity(intent);
+//        }
     }
 
 
@@ -61,6 +72,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if(view.getId() == R.id.btSignIn ){
                 signing(login, ETpassword.getText().toString());
+                //keyboard clouse
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
             }else if(view.getId() == R.id.btSignUp){
                 registration(login, ETpassword.getText().toString());
             }
@@ -78,8 +93,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
 //                            Log.d(TAG, "signInWithEmail:success");
-//                            FirebaseUser user = mAuth.getCurrentUser();
+                            FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(MainActivity.this, "Authorization successful!", Toast.LENGTH_SHORT).show();
+                            if(user != null){
+                                Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
+                                startActivity(intent);
+                            }
                         } else {
                             // If sign in fails, display a message to the user.
 //                            Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -99,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             // Sign in success, update UI with the signed-in user's information
 //                            Log.d(TAG, "createUserWithEmail:success");
 //                            FirebaseUser user = mAuth.getCurrentUser();
+
                             Toast.makeText(MainActivity.this, "Create Users successful!", Toast.LENGTH_SHORT).show();
                         } else {
                             // If sign in fails, display a message to the user.

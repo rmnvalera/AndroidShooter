@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "795954205658",
+    "firebase_url": "https://ball3activity.firebaseio.com",
+    "project_id": "ball3activity",
+    "storage_bucket": "ball3activity.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795954205658:android:5031983d16f1297c",
+        "android_client_info": {
+          "package_name": "com.example.roman.ball3activityv3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "795954205658-g8fupctgd1m01u9buo2a4qqhi2lp9ere.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.roman.ball3activityv3",
+            "certificate_hash": "4ea90c9d42349cb570f0c6bc5cb012e32c9bb406"
+          }
+        },
+        {
+          "client_id": "795954205658-mlj613j10i0956it0dbrddt7rlagrb5t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOqbga9WPbvfubKgBOpYbrjNo43oGqqGM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "795954205658-mlj613j10i0956it0dbrddt7rlagrb5t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

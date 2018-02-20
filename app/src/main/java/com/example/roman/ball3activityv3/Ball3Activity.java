@@ -1,11 +1,11 @@
 package com.example.roman.ball3activityv3;
 
-//import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.os.Handler;
-import android.os.Message;
-import android.support.annotation.Dimension;
+import android.os.SystemClock;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,12 +15,17 @@ import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.Animation;
+import android.widget.Chronometer;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-//import android.webkit.PermissionRequest;
+
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -35,9 +40,6 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
-
-//import java.util.ArrayList;
-//import java.util.List;
 //import com.karumi.dexter.Dexter;
 
 
@@ -45,18 +47,25 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
     private static final String  TAG = "OCVSample::Activity";
     private CameraBridgeViewBase mOpenCvCameraView;
 
-    private ImageView imAim;
-    private int widthDisplay;
-    private int heigtDisplay;
-    private int widthCam;
-    private int heigtCam;
+    private int     widthDisplay;
+    private int     heigtDisplay;
+    private int     widthCam;
+    private int     heigtCam;
 
-    private boolean onBtFire = false;
+    private boolean         onBtFire = false;
+    private Chronometer     chronometer;
+    private long            stopTime;
 
-    private TextView textViewFire;
-    private int logViewFire = 0;
-//    private Handler handler;
-//    private Animation aimAnim;
+    private ImageView   imAim;
+    private TextView    textViewFire;
+    private TextView    textShots;
+    private TextView    textUser;
+    private int         logViewFire = 0;
+    private int         logViewShots = 0;
+    private float       centerAimX;
+    private float       centerAimY;
+
+    private boolean start = false;
 
     private int                 mViewMode;
     private static final int    VIEW_MODE_RGBA   = 0;
@@ -72,6 +81,13 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
     private Mat          mThresholded2;
     private Mat          array255;
     private Mat          distance;
+
+    private FirebaseAuth        mAuth;
+    private DatabaseReference   myRef;
+
+    FirebaseUser user = mAuth.getInstance().getCurrentUser();//
+//    FirebaseListAdapter mAdapter;
+
 
     // Initialize OpenCV manager.
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -107,6 +123,9 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.surface_view);
+
+
+
         mOpenCvCameraView = (CameraBridgeViewBase)findViewById(R.id.view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setMaxFrameSize(500,500);
@@ -114,6 +133,29 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
         imAim = (ImageView)findViewById(R.id.aimLay);
         textViewFire = (TextView)findViewById(R.id.textViweFire);
+        textShots = (TextView)findViewById(R.id.textViweShots);
+        textUser = (TextView)findViewById(R.id.textUser);
+///////////////////////
+        if(user != null){
+            textUser.setText(user.getEmail());
+        }
+//        myRef = FirebaseDatabase.getInstance().getReference();
+///////////////////////
+        chronometer = (Chronometer)findViewById(R.id.timerChononom);
+        chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                long elapsedMillis = SystemClock.elapsedRealtime()
+                        - chronometer.getBase();
+
+                if (elapsedMillis > 600000 && elapsedMillis <601000) {
+                    String strElapsedMillis = "Прошло больше 60 секунд";
+                    Toast.makeText(getApplicationContext(),
+                            strElapsedMillis, Toast.LENGTH_SHORT)
+                            .show();
+                }
+            }
+        });
 //        handler = new Handler() {
 //            @Override
 //            public void handleMessage(Message msg) {
@@ -121,11 +163,38 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 //                textViewFire.setText( text );
 //            }
 //        };
+
+        //get center display
         Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
         widthDisplay = display.getWidth();
         heigtDisplay = display.getHeight();
         widthCam = widthDisplay / 480;
         heigtCam = heigtDisplay / 360;
+        centerAimX = (widthDisplay / 2) - imAim.getX();
+        centerAimY = (heigtDisplay / 2) - imAim.getY();
+
+        AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+        dlgAlert.setMessage("Now will be running time for shooting. Are you ready?");
+        dlgAlert.setTitle("Ball3Activity: Warning!");
+        dlgAlert.setPositiveButton("Ok",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //dismiss the dialog
+                        mViewMode = VIEW_MODE_FEATURES;
+                        start = true;
+                        chronometer.setBase(SystemClock.elapsedRealtime());
+                        chronometer.start();
+                    }
+                });
+        dlgAlert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Ball3Activity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+        dlgAlert.setCancelable(true);
+        dlgAlert.create().show();
     }
 
     @Override
@@ -141,20 +210,29 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         int id = item.getItemId();
         switch(id){
             case R.id.RGBA :
-                Log.i("Menu:", "RGBA");
-                mViewMode = VIEW_MODE_RGBA;
+                Log.i("Menu:", "Reset");
+                start = false;
+//                logViewShots = 0;
+//                logViewFire = 0;
+                stopTime = SystemClock.elapsedRealtime() - chronometer.getBase();
+                chronometer.stop();
+//                mViewMode = VIEW_MODE_RGBA;
                 return true;
-            case R.id.HSV:
-                Log.i("Menu:", "HSV");
-                mViewMode = VIEW_MODE_GRAY;
-                return true;
-            case R.id.Thresholded:
-                Log.i("Menu:", "Thresholded");
-                mViewMode = VIEW_MODE_CANNY;
-                return true;
+//            case R.id.HSV:
+//                Log.i("Menu:", "HSV");
+//                mViewMode = VIEW_MODE_GRAY;
+//                return true;
+//            case R.id.Thresholded:
+//                Log.i("Menu:", "Thresholded");
+//                mViewMode = VIEW_MODE_CANNY;
+//                return true;
             case R.id.Ball:
-                Log.i("Menu:", "Ball");
-                mViewMode = VIEW_MODE_FEATURES;
+                Log.i("Menu:", "Start");
+                start = true;
+//                stopTime = SystemClock.elapsedRealtime() - chronometer.getBase();
+                chronometer.setBase(SystemClock.elapsedRealtime() - stopTime);
+                chronometer.start();
+//                mViewMode = VIEW_MODE_FEATURES;
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -258,19 +336,14 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                 Point center= new Point(data2[i], data2[i+1]);
                 Imgproc.ellipse( mRgba, center, new Size((double)data2[i+2], (double)data2[i+2]), 0, 0, 360, new Scalar( 255, 0, 255 ), 4, 8, 0 );
 //                imAim.setY((float) center.y - imAim.getY());
-                if(Math.pow((imAim.getX() - (center.x * widthCam) ),2) + Math.pow((imAim.getY() - (center.y * heigtCam)),2) < Math.pow(100,2)){
+                if(Math.pow((centerAimX - (center.x * widthCam) ),2) + Math.pow((centerAimY - (center.y * heigtCam)),2) < Math.pow(data2[i+2] *2,2)){
 
                     if(onBtFire){
                         logViewFire = logViewFire + 1;
-
-//                        Message msg = new Message();
-//                        msg.obj = " " + logViewFire;
-//                        handler.sendMessage(msg);
-
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                textViewFire.setText("hit the target:" + logViewFire);
+                                textViewFire.setText("Hit the target:" + logViewFire);
                             }
                         });
 
@@ -281,6 +354,8 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                     onBtFire = false;
                     Log.i("AIM:", "NOOOOOOOOOOOOOOOO");
                 }
+
+                Log.i("MyLog: ", "X: "+ imAim.getX() + "; Y: " + imAim.getY() + " || width = " + widthDisplay/2 + "; Heugh = " + heigtDisplay/2 + " || R = " + (double)data2[i+2] + "|| Size =" + new Size((double)data2[i+2], (double)data2[i+2]));
             }
         }
         return mRgba;
@@ -288,6 +363,10 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
 
     public void onClickFire(View view) {
+        if(start) {
+            logViewShots = logViewShots +1;
+            textShots.setText("Shots: " + logViewShots);
+        }
         if(!onBtFire){
             onBtFire = true;
         }
