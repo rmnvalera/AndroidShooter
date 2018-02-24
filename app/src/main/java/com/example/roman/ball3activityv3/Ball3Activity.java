@@ -40,6 +40,10 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 //import com.karumi.dexter.Dexter;
 
 
@@ -150,21 +154,14 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                 long elapsedMillis = SystemClock.elapsedRealtime()
                         - chronometer.getBase();
 
-                if (elapsedMillis > 600000 && elapsedMillis <601000) {
-                    String strElapsedMillis = "Прошло больше 60 секунд";
+                if (elapsedMillis > 60000 && elapsedMillis <61000) {
+                    String strElapsedMillis = "Прошло больше 60 секунд. Поторопись!!!";
                     Toast.makeText(getApplicationContext(),
                             strElapsedMillis, Toast.LENGTH_SHORT)
                             .show();
                 }
             }
         });
-//        handler = new Handler() {
-//            @Override
-//            public void handleMessage(Message msg) {
-//                String text = (String) msg.obj;
-//                textViewFire.setText( text );
-//            }
-//        };
 
         //get center display
         Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
@@ -352,10 +349,28 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(Ball3Activity.this, "You win. Time: " + chronometer.getText(), Toast.LENGTH_SHORT).show();
+//                                    Toast.makeText(Ball3Activity.this, "You win. Time: " + chronometer.getText(), Toast.LENGTH_SHORT).show();
                                     userData.Time = chronometer.getText().toString();
                                     userData.Shorts = logViewShots;
-                                    myRef.child(user.getUid()).child("data").push().setValue(userData);
+                                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                                    String datePush = df.format(Calendar.getInstance().getTime());
+                                    df = new SimpleDateFormat("HH:mm");
+                                    String timePush = df.format(Calendar.getInstance().getTime());
+
+                                    myRef.child(user.getUid()).child("data/" + datePush + "/" + timePush).setValue(userData);
+                                    AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(Ball3Activity.this);
+                                    dlgAlert.setMessage("Congratulations, you hit the target 10 times. Do you want to continue? (but time and the data will not be taught)");
+                                    dlgAlert.setTitle("Ball3Activity: You win!");
+                                    dlgAlert.setPositiveButton("Yes", null);
+                                    dlgAlert.setNegativeButton("Not", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent(Ball3Activity.this, MainActivity.class);
+                                            startActivity(intent);
+                                        }
+                                    });
+                                    dlgAlert.setCancelable(true);
+                                    dlgAlert.create().show();
                                 }
                             });
                         }
