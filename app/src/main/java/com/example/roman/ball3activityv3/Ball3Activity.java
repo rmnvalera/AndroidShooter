@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -17,16 +19,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Chronometer;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
@@ -44,12 +42,14 @@ import org.opencv.imgproc.Imgproc;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-//import com.karumi.dexter.Dexter;
 
 
-public class Ball3Activity extends AppCompatActivity implements CvCameraViewListener2{
+
+
+public class Ball3Activity extends AppCompatActivity implements CvCameraViewListener2, SoundPool.OnLoadCompleteListener {
     private static final String  TAG = "OCVSample::Activity";
     private CameraBridgeViewBase mOpenCvCameraView;
+    private static final int PERMISSION_REQUEST_CODE = 123;
 
     private int     widthDisplay;
     private int     heigtDisplay;
@@ -60,10 +60,9 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
     private Chronometer     chronometer;
     private long            stopTime;
 
-    private ImageView   imAim;
+
     private TextView    textViewFire;
     private TextView    textShots;
-    private TextView    textUser;
     private int         logViewFire = 0;
     private int         logViewShots = 0;
     private float       centerAimX;
@@ -89,8 +88,12 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
     private FirebaseAuth        mAuth;
     private DatabaseReference   myRef;
 
-    FirebaseUser user = mAuth.getInstance().getCurrentUser();//
-    UserData userData;
+    FirebaseUser    user = mAuth.getInstance().getCurrentUser();//
+    UserData        userData;
+
+    SoundPool   sp;
+    int         soundIdShot;
+    final int   MAX_STREAMS = 5;
 
 
     // Initialize OpenCV manager.
@@ -135,6 +138,9 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         mOpenCvCameraView.setMaxFrameSize(500,500);
         mOpenCvCameraView.setCvCameraViewListener(this);
 
+        ImageView   imAim;
+        TextView    textUser;
+
         imAim = (ImageView)findViewById(R.id.aimLay);
         textViewFire = (TextView)findViewById(R.id.textViweFire);
         textShots = (TextView)findViewById(R.id.textViweShots);
@@ -145,7 +151,11 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
             textUser.setText(user.getEmail());
         }
         myRef = FirebaseDatabase.getInstance().getReference();
-        userData = new UserData(user.getEmail(), "0", logViewShots);
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        String datePush = df.format(Calendar.getInstance().getTime());
+        df = new SimpleDateFormat("HH:mm");
+        String timePush = df.format(Calendar.getInstance().getTime());
+        userData = new UserData(user.getEmail(), datePush, "0", logViewShots);
 ///////////////////////
         chronometer = (Chronometer)findViewById(R.id.timerChononom);
         chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
@@ -167,8 +177,8 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
         widthDisplay = display.getWidth();
         heigtDisplay = display.getHeight();
-        widthCam = widthDisplay / 480;
-        heigtCam = heigtDisplay / 360;
+//        widthCam = widthDisplay / 480;
+//        heigtCam = heigtDisplay / 360;
         centerAimX = (widthDisplay / 2) - imAim.getX();
         centerAimY = (heigtDisplay / 2) - imAim.getY();
 
@@ -194,6 +204,11 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         });
         dlgAlert.setCancelable(true);
         dlgAlert.create().show();
+
+        //Sound Shot
+        sp = new SoundPool(MAX_STREAMS, AudioManager.STREAM_MUSIC, 0);
+        sp.setOnLoadCompleteListener(this);
+        soundIdShot = sp.load(this, R.raw.shot, 1);
     }
 
     @Override
@@ -211,8 +226,6 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
             case R.id.RGBA :
                 Log.i("Menu:", "Reset");
                 start = false;
-//                logViewShots = 0;
-//                logViewFire = 0;
                 stopTime = SystemClock.elapsedRealtime() - chronometer.getBase();
                 chronometer.stop();
 //                mViewMode = VIEW_MODE_RGBA;
@@ -251,7 +264,6 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         super.onResume();
         OpenCVLoader.initDebug();
         mOpenCvCameraView.enableView();
-//        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, this, mLoaderCallback);
     }
 
     public void onDestroy() {
@@ -269,6 +281,14 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         distance=new Mat(height,width,CvType.CV_8UC1);
         mThresholded=new Mat(height,width,CvType.CV_8UC1);
         mThresholded2=new Mat(height,width,CvType.CV_8UC1);
+
+
+        widthCam = widthDisplay / width;
+        heigtCam = heigtDisplay / height;
+        Log.i("mOpenCvCameraViewW:", Integer.toString(width));
+        Log.i("mOpenCvCameraViewH:", Integer.toString(height));
+        Log.i("centerAimX:", Float.toString(centerAimX));
+        Log.i("centerAimY:", Float.toString(centerAimY));
     }
 
     public void onCameraViewStopped() {
@@ -281,7 +301,6 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         final int viewMode = mViewMode;
         mRgba = inputFrame.rgba();
         if (viewMode==VIEW_MODE_RGBA) return mRgba;
-//        List<Mat> lhsv = new ArrayList<>(3);
         Mat circles = new Mat(); // No need (and don't know how) to initialize it.
         // The function later will do it... (to a 1*N*CV_32FC3)
         array255.setTo(new Scalar(255));
@@ -293,7 +312,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
         // One way to select a range of colors by Hue
         Imgproc.cvtColor(mRgba, mHSV, Imgproc.COLOR_RGB2HSV,4);
-            if (viewMode==VIEW_MODE_GRAY) return mHSV;
+        if (viewMode==VIEW_MODE_GRAY) return mHSV;
         Core.inRange(mHSV, hsv_min, hsv_max, mThresholded);
         Core.inRange(mHSV, hsv_min2, hsv_max2, mThresholded2);
         Core.bitwise_or(mThresholded, mThresholded2, mThresholded);
@@ -311,6 +330,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 /////////////////////////////////////////////////////////////////////
         Core.inRange(distance,new Scalar(0.0), new Scalar(200.0), mThresholded2);
         Core.bitwise_and(mThresholded, mThresholded2, mThresholded);
+
 
 
         // Apply the Hough Transform to find the circles
@@ -352,12 +372,9 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 //                                    Toast.makeText(Ball3Activity.this, "You win. Time: " + chronometer.getText(), Toast.LENGTH_SHORT).show();
                                     userData.Time = chronometer.getText().toString();
                                     userData.Shorts = logViewShots;
-                                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-                                    String datePush = df.format(Calendar.getInstance().getTime());
-                                    df = new SimpleDateFormat("HH:mm");
-                                    String timePush = df.format(Calendar.getInstance().getTime());
 
-                                    myRef.child(user.getUid()).child("data/" + datePush + "/" + timePush).setValue(userData);
+                                    //                                    myRef.child(user.getUid()).child("data/" + datePush + "/" + timePush).setValue(userData);
+                                    myRef.child(user.getUid()).child("/").setValue(userData);
                                     AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(Ball3Activity.this);
                                     dlgAlert.setMessage("Congratulations, you hit the target 10 times. Do you want to continue? (but time and the data will not be taught)");
                                     dlgAlert.setTitle("Ball3Activity: You win!");
@@ -390,6 +407,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
     public void onClickFire(View view) {
         if(start) {
+            sp.play(soundIdShot, 1, 1, 0, 0, 1);
             logViewShots = logViewShots +1;
             textShots.setText("Shots: " + logViewShots);
         }
@@ -398,4 +416,8 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         }
     }
 
+    @Override
+    public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+        Log.d("onLoadComplete: ", "onLoadComplete, sampleId = " + sampleId + ", status = " + status);
+    }
 }

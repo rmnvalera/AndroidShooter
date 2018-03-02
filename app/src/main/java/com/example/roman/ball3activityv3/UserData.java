@@ -5,18 +5,16 @@ package com.example.roman.ball3activityv3;
  */
 
 public class UserData {
-    public String userName;
-    public String Time;
-    //String date = new SimpleDateFormat("dd.MM.yyyy").format(new Date());
-    public int Shorts;
+    String Time;
+    int Shorts;
+    private String date;
+    private String userName;
 
 
-    public UserData(){
 
-    }
-
-    public UserData(String userName, String Time, int Shorts){
-        this.userName = userName;
+    UserData(String UserName, String date, String Time, int Shorts){
+        this.userName = UserName;
+        this.date = date;
         this.Time = Time;
         this.Shorts = Shorts;
     }

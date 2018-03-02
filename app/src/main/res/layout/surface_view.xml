@@ -13,6 +13,7 @@
         android:layout_height="fill_parent"
         android:visibility="gone"
         opencv:camera_id="any"
+        opencv:show_fps="true"
         opencv:layout_constraintBottom_toTopOf="parent"
         opencv:layout_constraintEnd_toStartOf="parent"
         opencv:layout_constraintStart_toStartOf="parent"

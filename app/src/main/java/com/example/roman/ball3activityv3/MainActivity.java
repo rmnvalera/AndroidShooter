@@ -2,7 +2,12 @@ package com.example.roman.ball3activityv3;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,6 +22,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import android.Manifest;
+import android.support.design.widget.Snackbar;
+
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -25,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private EditText ETemail;
     private EditText ETpassword;
+
+    private static final int PERMISSION_REQUEST_CODE = 123;
 
 
     @Override
@@ -73,8 +83,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if(view.getId() == R.id.btSignIn ){
                 signing(login, ETpassword.getText().toString());
                 //keyboard clouse
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+//                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                goToBallActivity();
 
             }else if(view.getId() == R.id.btSignUp){
                 registration(login, ETpassword.getText().toString());
@@ -96,8 +107,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(MainActivity.this, "Authorization successful!", Toast.LENGTH_SHORT).show();
                             if(user != null){
-                                Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
-                                startActivity(intent);
+                                if (hasPermissions()){
+                                    Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
+                                    startActivity(intent);
+                                }
+                                else {
+                                    //our app doesn't have permissions, So i m requesting permissions.
+                                    requestPermissionWithRationale();
+                                }
                             }
                         } else {
                             // If sign in fails, display a message to the user.
@@ -128,5 +145,117 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     }
                 });
+    }
+
+    ///
+    private boolean hasPermissions(){
+        int res;
+        //string array of permissions,
+        String[] permissions = new String[]{Manifest.permission.CAMERA};
+
+        for (String perms : permissions){
+            res = checkCallingOrSelfPermission(perms);
+            if (!(res == PackageManager.PERMISSION_GRANTED)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        boolean allowed = true;
+
+        switch (requestCode){
+            case PERMISSION_REQUEST_CODE:
+
+                for (int res : grantResults){
+                    // if user granted all permissions.
+                    allowed = allowed && (res == PackageManager.PERMISSION_GRANTED);
+                }
+
+                break;
+            default:
+                // if user not granted permissions.
+                allowed = false;
+                break;
+        }
+
+        if (allowed){
+            //user granted all permissions we can perform our task.
+            goToBallActivity();
+        }
+        else {
+            // we will give warning to user that they haven't granted permissions.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
+                    Toast.makeText(this, "Storage Permissions denied.", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    showNoStoragePermissionSnackbar();
+                }
+            }
+        }
+
+    }
+
+    public void showNoStoragePermissionSnackbar() {
+        Snackbar.make(MainActivity.this.findViewById(R.id.activity_view), "Storage permission isn't granted" , Snackbar.LENGTH_LONG)
+                .setAction("SETTINGS", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        openApplicationSettings();
+
+                        Toast.makeText(getApplicationContext(),
+                                "Open Permissions and grant the Storage permission",
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                })
+                .show();
+    }
+
+    public void openApplicationSettings() {
+        Intent appSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + getPackageName()));
+        startActivityForResult(appSettingsIntent, PERMISSION_REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            goToBallActivity();
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void requestPermissionWithRationale() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.CAMERA)) {
+            final String message = "Storage permission is needed to show files count";
+            Snackbar.make(MainActivity.this.findViewById(R.id.activity_view), message, Snackbar.LENGTH_LONG)
+                    .setAction("GRANT", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            requestPerms();
+                        }
+                    })
+                    .show();
+        } else {
+            requestPerms();
+        }
+    }
+
+    private void requestPerms(){
+        String[] permissions = new String[]{Manifest.permission.CAMERA};
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            requestPermissions(permissions,PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    private void goToBallActivity(){
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 }

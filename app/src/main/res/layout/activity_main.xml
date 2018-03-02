@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
+    android:id="@+id/activity_view"
     tools:context="com.example.roman.ball3activityv3.MainActivity">
 
     <EditText
@@ -60,15 +61,15 @@
         app:layout_constraintStart_toEndOf="@+id/btSignUp"
         app:layout_constraintTop_toBottomOf="@+id/editPass" />
 
-    <Button
-        android:id="@+id/btAnonLogIn"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="23dp"
-        android:text="Anonymous Log In"
-        app:layout_constraintEnd_toEndOf="@+id/btSignIn"
-        app:layout_constraintStart_toStartOf="@+id/btSignUp"
-        app:layout_constraintTop_toBottomOf="@+id/btSignUp" />
+    <!--<Button-->
+        <!--android:id="@+id/btAnonLogIn"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="23dp"-->
+        <!--android:text="Anonymous Log In"-->
+        <!--app:layout_constraintEnd_toEndOf="@+id/btSignIn"-->
+        <!--app:layout_constraintStart_toStartOf="@+id/btSignUp"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/btSignUp" />-->
 
     <!--<TextView-->
         <!--android:id="@+id/textLogin"-->

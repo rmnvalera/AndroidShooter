@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Ball3ActivityV3.iml" filepath="$PROJECT_DIR$/Ball3ActivityV3.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://C:\Users\Roman\AndroidStudioProjects\Ball3ActivityV3\dexter\dexter.iml" filepath="C:\Users\Roman\AndroidStudioProjects\Ball3ActivityV3\dexter\dexter.iml" />
       <module fileurl="file://$PROJECT_DIR$/openCVLibrary/openCVLibrary.iml" filepath="$PROJECT_DIR$/openCVLibrary/openCVLibrary.iml" />
     </modules>
   </component>
