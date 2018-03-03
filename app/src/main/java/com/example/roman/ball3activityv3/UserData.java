@@ -4,15 +4,15 @@ package com.example.roman.ball3activityv3;
  * Created by Roman on 20.02.2018.
  */
 
-public class UserData {
-    String Time;
+class UserData {
+    long Time;
     int Shorts;
-    private String date;
-    private String userName;
+    protected String date;
+    protected String userName;
 
 
 
-    UserData(String UserName, String date, String Time, int Shorts){
+    UserData(String UserName, String date, long Time, int Shorts){
         this.userName = UserName;
         this.date = date;
         this.Time = Time;

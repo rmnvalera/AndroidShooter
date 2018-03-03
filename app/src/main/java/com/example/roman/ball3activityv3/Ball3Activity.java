@@ -55,6 +55,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
     private int     heigtDisplay;
     private int     widthCam;
     private int     heigtCam;
+    private ImageView   imAim;
 
     private boolean         onBtFire = false;
     private Chronometer     chronometer;
@@ -138,7 +139,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         mOpenCvCameraView.setMaxFrameSize(500,500);
         mOpenCvCameraView.setCvCameraViewListener(this);
 
-        ImageView   imAim;
+//        ImageView   imAim;
         TextView    textUser;
 
         imAim = (ImageView)findViewById(R.id.aimLay);
@@ -151,11 +152,11 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
             textUser.setText(user.getEmail());
         }
         myRef = FirebaseDatabase.getInstance().getReference();
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
         String datePush = df.format(Calendar.getInstance().getTime());
         df = new SimpleDateFormat("HH:mm");
         String timePush = df.format(Calendar.getInstance().getTime());
-        userData = new UserData(user.getEmail(), datePush, "0", logViewShots);
+        userData = new UserData(user.getEmail(), datePush, 0, logViewShots);
 ///////////////////////
         chronometer = (Chronometer)findViewById(R.id.timerChononom);
         chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
@@ -174,13 +175,12 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         });
 
         //get center display
-        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-        widthDisplay = display.getWidth();
-        heigtDisplay = display.getHeight();
-//        widthCam = widthDisplay / 480;
-//        heigtCam = heigtDisplay / 360;
-        centerAimX = (widthDisplay / 2) - imAim.getX();
-        centerAimY = (heigtDisplay / 2) - imAim.getY();
+//        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+        Display display = getWindowManager().getDefaultDisplay();
+        android.graphics.Point sizeDisplay = new android.graphics.Point();
+        display.getSize(sizeDisplay);
+        widthDisplay = sizeDisplay.x;
+        heigtDisplay = sizeDisplay.y;
 
         AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
         dlgAlert.setMessage("Now will be running time for shooting. Are you ready?");
@@ -285,8 +285,12 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
         widthCam = widthDisplay / width;
         heigtCam = heigtDisplay / height;
+        centerAimX = (widthDisplay / 2);
+        centerAimY = (heigtDisplay / 2);
         Log.i("mOpenCvCameraViewW:", Integer.toString(width));
         Log.i("mOpenCvCameraViewH:", Integer.toString(height));
+        Log.i("widthDisplay:", Integer.toString(widthDisplay /2));
+        Log.i("heigtDisplay:", Integer.toString(heigtDisplay / 2));
         Log.i("centerAimX:", Float.toString(centerAimX));
         Log.i("centerAimY:", Float.toString(centerAimY));
     }
@@ -355,7 +359,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                 Point center= new Point(data2[i], data2[i+1]);
                 Imgproc.ellipse( mRgba, center, new Size((double)data2[i+2], (double)data2[i+2]), 0, 0, 360, new Scalar( 255, 0, 255 ), 4, 8, 0 );
 //                imAim.setY((float) center.y - imAim.getY());
-                if(Math.pow((centerAimX - (center.x * widthCam) ),2) + Math.pow((centerAimY - (center.y * heigtCam)),2) < Math.pow(data2[i+2] *2,2)){
+                if(Math.pow((centerAimX - (center.x * widthCam) ),2) + Math.pow((centerAimY - (center.y * heigtCam)),2) < Math.pow(data2[i+2] *2.5,2)){
 
                     if(onBtFire){
                         logViewFire = logViewFire + 1;
@@ -370,10 +374,11 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                                 @Override
                                 public void run() {
 //                                    Toast.makeText(Ball3Activity.this, "You win. Time: " + chronometer.getText(), Toast.LENGTH_SHORT).show();
-                                    userData.Time = chronometer.getText().toString();
+                                    userData.Time = (SystemClock.elapsedRealtime() - chronometer.getBase()) / 1000;
+//                                    Log.i("TimeBase::", Long.toString((SystemClock.elapsedRealtime() - chronometer.getBase()) / 1000) + " || TimeText:::" + chronometer.getText().toString());
                                     userData.Shorts = logViewShots;
 
-                                    //                                    myRef.child(user.getUid()).child("data/" + datePush + "/" + timePush).setValue(userData);
+                                    //myRef.child(user.getUid()).child("data/" + datePush + "/" + timePush).setValue(userData);
                                     myRef.child(user.getUid()).child("/").setValue(userData);
                                     AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(Ball3Activity.this);
                                     dlgAlert.setMessage("Congratulations, you hit the target 10 times. Do you want to continue? (but time and the data will not be taught)");
