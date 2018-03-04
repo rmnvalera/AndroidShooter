@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context="com.example.roman.ball3activityv3.RegistrationActivity">
+
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbarRegistr"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="@string/regisration"
+        app:titleTextColor="@color/background" />
+
+    <EditText
+        android:id="@+id/editLoginReg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:ems="10"
+        android:hint="@string/login"
+        android:inputType="textPersonName"
+        android:textAlignment="viewStart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbarRegistr" />
+
+    <EditText
+        android:id="@+id/editFirstNameReg"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="@string/firstName"
+        app:layout_constraintEnd_toEndOf="@+id/editLoginReg"
+        app:layout_constraintStart_toStartOf="@+id/editLoginReg"
+        app:layout_constraintTop_toBottomOf="@+id/editLoginReg"
+        android:singleLine="true"
+        />
+
+    <EditText
+        android:id="@+id/editLastNameReg"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="@string/lastName"
+        app:layout_constraintEnd_toEndOf="@+id/editFirstNameReg"
+        app:layout_constraintStart_toStartOf="@+id/editFirstNameReg"
+        app:layout_constraintTop_toBottomOf="@+id/editFirstNameReg"
+        android:singleLine="true"
+        />
+
+    <EditText
+        android:id="@+id/editPassReg"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:ems="10"
+        android:hint="@string/passord"
+        android:inputType="textPersonName|textPassword"
+        android:password="true"
+        android:singleLine="false"
+        app:layout_constraintEnd_toEndOf="@+id/editLastNameReg"
+        app:layout_constraintStart_toStartOf="@+id/editLastNameReg"
+        app:layout_constraintTop_toBottomOf="@+id/editLastNameReg" />
+
+    <EditText
+        android:id="@+id/editPassConfirmReg"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:password="true"
+        android:hint="@string/confirmPassord"
+        app:layout_constraintEnd_toEndOf="@+id/editPassReg"
+        app:layout_constraintStart_toStartOf="@+id/editPassReg"
+        app:layout_constraintTop_toBottomOf="@+id/editPassReg"
+        android:singleLine="true"
+        />
+
+    <Button
+        android:id="@+id/RegisterReg"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:text="Register"
+        android:onClick="onClickRegistration"
+        tools:layout_editor_absoluteX="72dp"
+        tools:layout_editor_absoluteY="421dp"
+        app:layout_constraintEnd_toEndOf="@+id/editPassConfirmReg"
+        app:layout_constraintStart_toStartOf="@+id/editPassConfirmReg"
+        app:layout_constraintTop_toBottomOf="@+id/editPassConfirmReg"/>
+
+
+</android.support.constraint.ConstraintLayout>

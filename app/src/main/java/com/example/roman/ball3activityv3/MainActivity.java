@@ -74,6 +74,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         String login;
+        if(view.getId() == R.id.btSignUp){
+            goToBallRegistration();
+            //registration(login, ETpassword.getText().toString());
+        }
         if(!Objects.equals(ETemail.getText().toString(), "") && !Objects.equals(ETpassword.getText().toString(), "")){
             login = ETemail.getText().toString();
             if(!login.contains("@")){
@@ -83,14 +87,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if(view.getId() == R.id.btSignIn ){
                 signing(login, ETpassword.getText().toString());
                 //keyboard clouse
-//                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-                goToBallActivity();
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+//                goToBallActivity();
 
-            }else if(view.getId() == R.id.btSignUp){
-                registration(login, ETpassword.getText().toString());
-            }
-        }else{
+            }else
             Toast.makeText(MainActivity.this, "Login or Password is not filled!", Toast.LENGTH_SHORT).show();
         }
 
@@ -108,8 +109,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             Toast.makeText(MainActivity.this, "Authorization successful!", Toast.LENGTH_SHORT).show();
                             if(user != null){
                                 if (hasPermissions()){
-                                    Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
-                                    startActivity(intent);
+//                                    Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
+//                                    startActivity(intent);
+                                    goToBallActivity();
                                 }
                                 else {
                                     //our app doesn't have permissions, So i m requesting permissions.
@@ -255,7 +257,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void goToBallActivity(){
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+//        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
+        startActivity(intent);
+    }
+
+    private void goToBallRegistration(){
+//        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        Intent intent = new Intent(MainActivity.this, RegistrationActivity.class);
+        startActivity(intent);
     }
 }

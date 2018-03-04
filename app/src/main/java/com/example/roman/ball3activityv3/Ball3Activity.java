@@ -1,12 +1,14 @@
 package com.example.roman.ball3activityv3;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.SystemClock;
+import android.os.Vibrator;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -95,6 +97,9 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
     SoundPool   sp;
     int         soundIdShot;
     final int   MAX_STREAMS = 5;
+
+   private long millsVibrator = 200L; //two milisecond in vibration
+   private Vibrator vibrator;
 
 
     // Initialize OpenCV manager.
@@ -209,6 +214,8 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         sp = new SoundPool(MAX_STREAMS, AudioManager.STREAM_MUSIC, 0);
         sp.setOnLoadCompleteListener(this);
         soundIdShot = sp.load(this, R.raw.shot, 1);
+
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
     }
 
     @Override
@@ -363,6 +370,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
                     if(onBtFire){
                         logViewFire = logViewFire + 1;
+                        vibrator.vibrate(millsVibrator);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -379,7 +387,11 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                                     userData.Shorts = logViewShots;
 
                                     //myRef.child(user.getUid()).child("data/" + datePush + "/" + timePush).setValue(userData);
-                                    myRef.child(user.getUid()).child("/").setValue(userData);
+//                                    myRef.child(user.getUid()).child("/").setValue(userData);
+                                    myRef.child(user.getUid()).child("/shots").setValue(userData.Shorts);
+                                    myRef.child(user.getUid()).child("/Time").setValue(userData.Time);
+                                    myRef.child(user.getUid()).child("/date").setValue(userData.date);
+                                    myRef.child(user.getUid()).child("/login").setValue(userData.userName);
                                     AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(Ball3Activity.this);
                                     dlgAlert.setMessage("Congratulations, you hit the target 10 times. Do you want to continue? (but time and the data will not be taught)");
                                     dlgAlert.setTitle("Ball3Activity: You win!");

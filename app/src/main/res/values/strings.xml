@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Shoot ball</string>
+    <string name="regisration">Shoot ball: Registration</string>
     <string name="passord">Passord</string>
+    <string name="confirmPassord">Confirm password</string>
     <string name="login">Login</string>
+    <string name="firstName">First name</string>
+    <string name="lastName">Last name</string>
     <string name="hit_the_target">Hit the target: 0</string>
 </resources>
