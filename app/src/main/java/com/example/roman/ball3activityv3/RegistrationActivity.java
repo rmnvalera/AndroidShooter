@@ -1,10 +1,12 @@
 package com.example.roman.ball3activityv3;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,8 +19,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.Objects;
 
 public class RegistrationActivity extends AppCompatActivity {
 
@@ -33,6 +33,9 @@ public class RegistrationActivity extends AppCompatActivity {
     private EditText passConfirmEdit;
 
     private Button btRegistration;
+
+    SharedPreferences myPreferences;
+    SharedPreferences.Editor myEditor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +64,7 @@ public class RegistrationActivity extends AppCompatActivity {
 //            }
 //        });
 
-
+        myPreferences = PreferenceManager.getDefaultSharedPreferences(RegistrationActivity.this);
     }
 
     public void registration(String email, String password){
@@ -70,51 +73,58 @@ public class RegistrationActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-//                            Log.d(TAG, "createUserWithEmail:success");
-//                            FirebaseUser user = mAuth.getCurrentUser();
+                            String logIn = emailEdit.getText().toString();
+                            String passwordIn = passEdit.getText().toString();
+                            if (!logIn.contains("@")) {
+                                logIn = emailEdit.getText().toString() + "@Ball.com";
+                            }
+                            Toast.makeText(RegistrationActivity.this, "Создание пользователя успешно!", Toast.LENGTH_SHORT).show();
+                            signing(logIn, passwordIn);
+                        } else {
+                            Toast.makeText(RegistrationActivity.this, "Ошибка аутентификации.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    public void signing(String email, String password){
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = mAuth.getCurrentUser();
+
                             String login = emailEdit.getText().toString();
+                            String FirstName = firstNameEdit.getText().toString();
+                            String LastName = lastNameEdit.getText().toString();
                             if (!login.contains("@")) {
                                 login = emailEdit.getText().toString() + "@Ball.com";
                             }
 
-                            mAuth.signInWithEmailAndPassword(login, passEdit.getText().toString());
-                            FirebaseUser user = mAuth.getInstance().getCurrentUser();
-                            myRef.child(user.getUid()).child("/FirstName").setValue(firstNameEdit.getText().toString());
-                            myRef.child(user.getUid()).child("/LastName").setValue(lastNameEdit.getText().toString());
-                            mAuth.signOut();
+                            if(user != null){
+                                    myRef.child(user.getUid()).child("/login").setValue(login);
+                                    myRef.child(user.getUid()).child("/FirstName").setValue(FirstName);
+                                    myRef.child(user.getUid()).child("/LastName").setValue(LastName);
+                                    try {
+                                        Thread.sleep(500); //Приостанавливает поток на 1 секунду
+                                    } catch(Exception e) {
+                                    }
 
-                            Toast.makeText(RegistrationActivity.this, "Create Users successful!", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(RegistrationActivity.this, MainActivity.class);
-                            startActivity(intent);
+                                    myEditor = myPreferences.edit();
+                                    myEditor.putLong("TIME", 0);
+                                    myEditor.commit();
+
+                                    goToMainMenu();
+                            }
                         } else {
-                            // If sign in fails, display a message to the user.
-//                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(RegistrationActivity.this, "Authentication failed.",
+                            Toast.makeText(RegistrationActivity.this, "Ошибка аутентификации.",
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
     }
 
-//    public void signing(String email, String password){
-//        mAuth.signInWithEmailAndPassword(email, password)
-//                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<AuthResult> task) {
-//                        if (task.isSuccessful()) {
-//                            // Sign in success, update UI with the signed-in user's information
-//                            FirebaseUser user = mAuth.getCurrentUser();
-////                            Toast.makeText(MainActivity.this, "Authorization successful!", Toast.LENGTH_SHORT).show();
-//                            if(user != null){
-////                                myRef.child(user.getUid()).child("/").setValue(userName);
-//                            }
-//                        } else {
-//                            // If sign in fails, display a message to the user.
-//                        }
-//                    }
-//                });
-//    }
 
     public void onClickRegistration(View view){
         String login;
@@ -122,19 +132,21 @@ public class RegistrationActivity extends AppCompatActivity {
             if (!login.contains("@")) {
                 login = emailEdit.getText().toString() + "@Ball.com";
             }
-            if (Objects.equals(emailEdit.getText().toString(), "")) {
-                Toast.makeText(RegistrationActivity.this, "Email failed", Toast.LENGTH_SHORT).show();
+            if(emailEdit.getText().toString().equals("")){
+                Toast.makeText(RegistrationActivity.this, "Заполните ваш логин!", Toast.LENGTH_SHORT).show();
             } else {
-                if (Objects.equals(firstNameEdit.getText().toString(), "") || Objects.equals(lastNameEdit.getText().toString(), "")) {
-                    Toast.makeText(RegistrationActivity.this, "fill in the name and surname", Toast.LENGTH_SHORT).show();
+                if(firstNameEdit.getText().toString().equals("") || lastNameEdit.getText().toString().equals("")){
+                    Toast.makeText(RegistrationActivity.this, "Заполните свое имя и фамилию!", Toast.LENGTH_SHORT).show();
                 }else {
                     if (passEdit.getText().length() < 6) {
-                        Toast.makeText(RegistrationActivity.this, "Password is less than six characters", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegistrationActivity.this, "Пароль меньше шести символов!", Toast.LENGTH_SHORT).show();
                     }else {
-                        if (!Objects.equals(passEdit.getText().toString(), passConfirmEdit.getText().toString())) {
-                            Toast.makeText(RegistrationActivity.this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+                        if (!passEdit.getText().toString().equals(passConfirmEdit.getText().toString())){
+                            Toast.makeText(RegistrationActivity.this, "Пароли не совпадают!", Toast.LENGTH_SHORT).show();
                         }else {
                             registration(login, passEdit.getText().toString());
+//                            signing(login, passEdit.getText().toString());
+
                         }
                     }
 
@@ -143,5 +155,28 @@ public class RegistrationActivity extends AppCompatActivity {
 
             }
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(RegistrationActivity.this, MainActivity.class);
+        try{
+            RegistrationActivity.this.finish();
+            startActivity(intent);
+        }catch (Exception e){
+            Log.i("Exception", "" + e);
+        }
+    }
+
+
+
+    private void goToMainMenu(){
+        Intent intent = new Intent(RegistrationActivity.this, MenuActivity.class);
+        try {
+            RegistrationActivity.this.finish();
+            startActivity(intent);
+        }catch (Exception e){
+            Log.i("Exception", "" + e);
+        }
     }
 }

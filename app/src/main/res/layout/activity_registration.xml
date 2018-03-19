@@ -22,88 +22,86 @@
         app:title="@string/regisration"
         app:titleTextColor="@color/background" />
 
-    <EditText
-        android:id="@+id/editLoginReg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:ems="10"
-        android:hint="@string/login"
-        android:inputType="textPersonName"
-        android:textAlignment="viewStart"
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbarRegistr" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbarRegistr">
 
-    <EditText
-        android:id="@+id/editFirstNameReg"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="22dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="@string/firstName"
-        app:layout_constraintEnd_toEndOf="@+id/editLoginReg"
-        app:layout_constraintStart_toStartOf="@+id/editLoginReg"
-        app:layout_constraintTop_toBottomOf="@+id/editLoginReg"
-        android:singleLine="true"
-        />
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="32dp"
+            android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/editLastNameReg"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="@string/lastName"
-        app:layout_constraintEnd_toEndOf="@+id/editFirstNameReg"
-        app:layout_constraintStart_toStartOf="@+id/editFirstNameReg"
-        app:layout_constraintTop_toBottomOf="@+id/editFirstNameReg"
-        android:singleLine="true"
-        />
+            <EditText
+                android:id="@+id/editLoginReg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:ems="10"
+                android:hint="@string/login"
+                android:inputType="textPersonName"
+                android:textAlignment="viewStart" />
 
-    <EditText
-        android:id="@+id/editPassReg"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="22dp"
-        android:ems="10"
-        android:hint="@string/passord"
-        android:inputType="textPersonName|textPassword"
-        android:password="true"
-        android:singleLine="false"
-        app:layout_constraintEnd_toEndOf="@+id/editLastNameReg"
-        app:layout_constraintStart_toStartOf="@+id/editLastNameReg"
-        app:layout_constraintTop_toBottomOf="@+id/editLastNameReg" />
+            <EditText
+                android:id="@+id/editFirstNameReg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:ems="10"
+                android:hint="@string/firstName"
+                android:inputType="textPersonName"
+                android:singleLine="true" />
 
-    <EditText
-        android:id="@+id/editPassConfirmReg"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:password="true"
-        android:hint="@string/confirmPassord"
-        app:layout_constraintEnd_toEndOf="@+id/editPassReg"
-        app:layout_constraintStart_toStartOf="@+id/editPassReg"
-        app:layout_constraintTop_toBottomOf="@+id/editPassReg"
-        android:singleLine="true"
-        />
+            <EditText
+                android:id="@+id/editLastNameReg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/lastName"
+                android:inputType="textPersonName"
+                android:singleLine="true" />
 
-    <Button
-        android:id="@+id/RegisterReg"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="22dp"
-        android:text="Register"
-        android:onClick="onClickRegistration"
-        tools:layout_editor_absoluteX="72dp"
-        tools:layout_editor_absoluteY="421dp"
-        app:layout_constraintEnd_toEndOf="@+id/editPassConfirmReg"
-        app:layout_constraintStart_toStartOf="@+id/editPassConfirmReg"
-        app:layout_constraintTop_toBottomOf="@+id/editPassConfirmReg"/>
+            <EditText
+                android:id="@+id/editPassReg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:ems="10"
+                android:hint="@string/passord"
+                android:inputType="textPersonName|textPassword"
+                android:password="true"
+                android:singleLine="false" />
+
+            <EditText
+                android:id="@+id/editPassConfirmReg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/confirmPassord"
+                android:inputType="textPersonName"
+                android:password="true"
+                android:singleLine="true" />
+
+            <Button
+                android:id="@+id/RegisterReg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:onClick="onClickRegistration"
+                android:text="Register"
+                tools:layout_editor_absoluteX="72dp"
+                tools:layout_editor_absoluteY="421dp"
+                android:layout_marginBottom="32dp"/>
+
+
+        </LinearLayout>
+    </ScrollView>
 
 
 </android.support.constraint.ConstraintLayout>

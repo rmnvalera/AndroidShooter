@@ -3,14 +3,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
 
-    <item
-        android:id="@+id/Ball"
-        android:orderInCategory="4"
-        android:title="Start" />
-    <item
-        android:id="@+id/RGBA"
-        android:orderInCategory="1"
-        android:title="Reset" />
+    <!--<item-->
+        <!--android:id="@+id/Ball"-->
+        <!--android:orderInCategory="4"-->
+        <!--android:title="Start" />-->
+    <!--<item-->
+        <!--android:id="@+id/RGBA"-->
+        <!--android:orderInCategory="1"-->
+        <!--android:title="Reset" />-->
     <!--<item-->
     <!--android:id="@+id/HSV"-->
     <!--android:orderInCategory="2"-->

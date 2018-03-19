@@ -13,7 +13,6 @@
         android:layout_height="fill_parent"
         android:visibility="gone"
         opencv:camera_id="any"
-        opencv:show_fps="true"
         opencv:layout_constraintBottom_toTopOf="parent"
         opencv:layout_constraintEnd_toStartOf="parent"
         opencv:layout_constraintStart_toStartOf="parent"
@@ -31,60 +30,31 @@
         opencv:layout_constraintTop_toTopOf="parent"
         opencv:srcCompat="@drawable/aim" />
 
-    <Button
-        android:id="@+id/btFireRight"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="50dp"
-        android:alpha="0.0"
-        android:onClick="onClickFire"
-        android:text="Fire"
-        opencv:layout_constraintBottom_toBottomOf="parent"
-        opencv:layout_constraintEnd_toEndOf="parent"
-        opencv:layout_constraintStart_toEndOf="@+id/aimLay"
-        opencv:layout_constraintTop_toTopOf="parent" />
+    <!--<Button-->
+        <!--android:id="@+id/btFireRight"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="0dp"-->
+        <!--android:layout_marginStart="50dp"-->
+        <!--android:alpha="0.0"-->
+        <!--android:onClick="onClickFire"-->
+        <!--android:text="Fire"-->
+        <!--opencv:layout_constraintBottom_toBottomOf="parent"-->
+        <!--opencv:layout_constraintEnd_toEndOf="parent"-->
+        <!--opencv:layout_constraintStart_toEndOf="@+id/aimLay"-->
+        <!--opencv:layout_constraintTop_toTopOf="parent" />-->
 
     <TextView
         android:id="@+id/textViweFire"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="18dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="8dp"
         android:text="@string/hit_the_target"
         android:textColor="?attr/colorError"
-        opencv:layout_constraintStart_toStartOf="parent"
+        android:textSize="24sp"
+        opencv:layout_constraintEnd_toStartOf="parent"
         opencv:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/textViweShots"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="8dp"
-        android:text="Shots: 0"
-        android:textColor="?attr/colorError"
-        opencv:layout_constraintStart_toStartOf="parent"
-        opencv:layout_constraintTop_toBottomOf="@+id/textViweFire" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Timer:"
-        android:textColor="?attr/colorError"
-        opencv:layout_constraintStart_toStartOf="@+id/textViweShots"
-        opencv:layout_constraintTop_toBottomOf="@+id/textViweShots" />
-
-    <TextView
-        android:id="@+id/textUser"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="User"
-        android:textColor="?attr/colorError"
-        opencv:layout_constraintStart_toStartOf="@+id/textView"
-        opencv:layout_constraintTop_toBottomOf="@+id/textView"/>
 
     <Chronometer
         android:id="@+id/timerChononom"
@@ -93,19 +63,18 @@
         android:layout_marginStart="5dp"
         android:layout_marginTop="8dp"
         android:textColor="?attr/colorError"
-        opencv:layout_constraintStart_toEndOf="@+id/textView"
-        opencv:layout_constraintTop_toBottomOf="@+id/textViweShots" />
+        android:textSize="24sp"
+        opencv:layout_constraintStart_toEndOf="parent"
+        opencv:layout_constraintTop_toBottomOf="parent" />
 
     <Button
         android:id="@+id/btFireLeft"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginEnd="50dp"
         android:alpha="0.0"
-        android:text="Fire"
         android:onClick="onClickFire"
         opencv:layout_constraintBottom_toBottomOf="parent"
-        opencv:layout_constraintEnd_toStartOf="@+id/aimLay"
+        opencv:layout_constraintEnd_toEndOf="parent"
         opencv:layout_constraintStart_toStartOf="parent"
         opencv:layout_constraintTop_toTopOf="parent" />
 
