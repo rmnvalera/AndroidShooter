@@ -106,6 +106,7 @@ public class RegistrationActivity extends AppCompatActivity {
                                     myRef.child(user.getUid()).child("/login").setValue(login);
                                     myRef.child(user.getUid()).child("/FirstName").setValue(FirstName);
                                     myRef.child(user.getUid()).child("/LastName").setValue(LastName);
+                                    myRef.child(user.getUid()).child("/Time").setValue(0);
                                     try {
                                         Thread.sleep(500); //Приостанавливает поток на 1 секунду
                                     } catch(Exception e) {

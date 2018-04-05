@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -39,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private EditText ETemail;
     private EditText ETpassword;
+
+    private TextView TextOfflineResult;
 
     private static final int PERMISSION_REQUEST_CODE = 123;
 
@@ -68,8 +71,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ETemail = (EditText)findViewById(R.id.editLogin);
         ETpassword = (EditText)findViewById(R.id.editPass);
 
+        TextOfflineResult = (TextView)findViewById(R.id.textOfflineResult);
+
         findViewById(R.id.btSignIn).setOnClickListener(this);
         findViewById(R.id.btSignUp).setOnClickListener(this);
+
 
         myRef = FirebaseDatabase.getInstance().getReference();
         myPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
@@ -80,6 +86,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        long timeDB = myPreferences.getLong("TIME", 0);
+        if(timeDB == 0){
+            TextOfflineResult.setText("");
+        }else{
+            TextOfflineResult.setText("Offline-результат: " + timeDB + "сек.");
+        }
+    }
 
     @Override
     public void onClick(View view) {
@@ -99,8 +115,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     //keyboard clouse
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-//                goToMainMenu();
-
                 } else {
                     Toast.makeText(MainActivity.this, "Логин или Пароль не заполнены!", Toast.LENGTH_SHORT).show();
                 }
@@ -115,46 +129,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-//                            Log.d(TAG, "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(MainActivity.this, "Авторизация прошла успешно!", Toast.LENGTH_SHORT).show();
                             if(user != null){
-                                if (hasPermissions()){
-//                                    Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
-//                                    startActivity(intent);
-                                    goToMainMenu();
-                                }
-                                else {
-                                    //our app doesn't have permissions, So i m requesting permissions.
-                                    requestPermissionWithRationale();
-                                }
+                                goToMainMenu();
                             }
                         } else {
-                            // If sign in fails, display a message to the user.
-//                            Log.w(TAG, "signInWithEmail:failure", task.getException());
                             Toast.makeText(MainActivity.this, "Ошибка аутентификации.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-    }
-
-    public void registration(String email, String password){
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-//                            Log.d(TAG, "createUserWithEmail:success");
-//                            FirebaseUser user = mAuth.getCurrentUser();
-
-                            Toast.makeText(MainActivity.this, "Create Users successful!", Toast.LENGTH_SHORT).show();
-                        } else {
-                            // If sign in fails, display a message to the user.
-//                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -164,7 +145,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ///
     private boolean hasPermissions(){
         int res;
-        //string array of permissions,
         String[] permissions = new String[]{Manifest.permission.CAMERA};
 
         for (String perms : permissions){
@@ -184,23 +164,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case PERMISSION_REQUEST_CODE:
 
                 for (int res : grantResults){
-                    // if user granted all permissions.
                     allowed = allowed && (res == PackageManager.PERMISSION_GRANTED);
                 }
 
                 break;
             default:
-                // if user not granted permissions.
                 allowed = false;
                 break;
         }
 
         if (allowed){
-            //user granted all permissions we can perform our task.
-            goToMainMenu();
+            Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
+            intent.putExtra("isOffline", true);
+            startActivity(intent);
         }
         else {
-            // we will give warning to user that they haven't granted permissions.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
                     Toast.makeText(this, "Разрешения на камеру запрещены.", Toast.LENGTH_SHORT).show();
@@ -214,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void showNoStoragePermissionSnackbar() {
-        Snackbar.make(MainActivity.this.findViewById(R.id.activity_view), "Storage permission isn't granted" , Snackbar.LENGTH_LONG)
+        Snackbar.make(MainActivity.this.findViewById(R.id.activity_view), "Разрешение на хранение не предоставляется" , Snackbar.LENGTH_LONG)
                 .setAction("НАСТРОЙКИ", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -238,7 +216,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PERMISSION_REQUEST_CODE) {
-            goToMainMenu();
+            Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
+            intent.putExtra("isOffline", true);
+            startActivity(intent);
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -309,6 +289,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
         }else{
             Log.i("UserTime:", "User = null");
+        }
+    }
+
+
+    public void onClickOffline(View view){
+        if (hasPermissions()){
+            Intent intent = new Intent(MainActivity.this, Ball3Activity.class);
+            try{
+            this.finish();
+            intent.putExtra("isOffline", true);
+            startActivity(intent);
+            }catch (Exception e){
+                Log.i("Exception", "" + e);
+            }
+        }
+        else {
+            requestPermissionWithRationale();
         }
     }
 

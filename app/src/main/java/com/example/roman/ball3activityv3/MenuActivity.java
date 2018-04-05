@@ -1,6 +1,7 @@
 package com.example.roman.ball3activityv3;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -11,6 +12,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -27,23 +29,24 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+
 public class MenuActivity extends AppCompatActivity {
 
-    ListView listViewMenu;
-    Toolbar toolbar;
+    ListView    listViewMenu;
+    Toolbar     toolbar;
+    TextView    TextOfflineResult;
 
-    private FirebaseAuth mAuth;
-    private DatabaseReference myRef;
+    private FirebaseAuth        mAuth;
+    private DatabaseReference   myRef;
 
-    FirebaseUser    user = mAuth.getInstance().getCurrentUser();//
-
-    SharedPreferences myPreferences;
+    FirebaseUser        user = mAuth.getInstance().getCurrentUser();
+    SharedPreferences   myPreferences;
     SharedPreferences.Editor myEditor;
 
-    private String userFirstName;
-    private String userLastNae;
-
-    UserData userData;
 
     private static final int PERMISSION_REQUEST_CODE = 123;
 
@@ -51,6 +54,8 @@ public class MenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
+
+        TextOfflineResult = (TextView)findViewById(R.id.TOfllineResult);
 
         //DB
         myPreferences = PreferenceManager.getDefaultSharedPreferences(MenuActivity.this);
@@ -86,10 +91,22 @@ public class MenuActivity extends AppCompatActivity {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://ball3activity.firebaseapp.com/"));
                     startActivity(browserIntent);
                 }
-                if(stTrext.equals("Правила")){
-
+                if(stTrext.equals("Мой результат")){
+                    long AtimeDB = myPreferences.getLong("TIME", 0);
+                    if(AtimeDB != 0){
+                        TextOfflineResult.setText("Ваш результат: " + AtimeDB + "сек.");
+                    }else{
+                        Toast.makeText(getApplicationContext(),
+                                "Его еще нет", Toast.LENGTH_SHORT)
+                                .show();
+                    }
                 }
                 if(stTrext.equals("Выйти из аккаунта")){
+
+                    myEditor = myPreferences.edit();
+                    myEditor.putLong("TIME", 0);
+                    myEditor.commit();
+
                     mAuth.signOut();
                     Intent intent = new Intent(MenuActivity.this, MainActivity.class);
                     try {
@@ -101,35 +118,24 @@ public class MenuActivity extends AppCompatActivity {
                 }
             }
         });
+
     }
+
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        long BtimeDB = myPreferences.getLong("TIME", 0);
+//
+//        if(BtimeDB == 0){
+//            TextOfflineResult.setText("");
+//        }else{
+//            TextOfflineResult.setText("Ваш результат: " + BtimeDB + "сек.");
+//        }
+//    }
 
     private void onItemStart(){
         if (hasPermissions()){
-            if(!HasConnection.isOnline(MenuActivity.this)){
-                Toast.makeText(MenuActivity.this, "Нет интернет соиденения!",
-                        Toast.LENGTH_SHORT).show();
-            }else {
-    //                        myRef.child(user.getUid()).addValueEventListener(new ValueEventListener() {
-    //                            @Override
-    //                            public void onDataChange(DataSnapshot dataSnapshot) {
-    //                                userFirstName = (String) dataSnapshot.child("FirstName").getValue();
-    //                                userLastNae = (String) dataSnapshot.child("LastName").getValue();
-    //                                Log.i("UserTime:", (String)dataSnapshot.child("Time").getValue());
-    //                            }
-    //
-    //                            @Override
-    //                            public void onCancelled(DatabaseError databaseError) {
-    //
-    //                            }
-    //                        });
-    //                        myEditor = myPreferences.edit();
-    //                        myEditor.putString("FIRST_NAME", "");
-    //                        myEditor.putString("LAST_NAME", "");
-    //                        myEditor.putString("LOGIN", "");
-    //                        myEditor.putLong("TIME", 0);
-    //                        myEditor.commit();
-                goToBall3Activity();
-            }
+            goToBall3Activity();
         }
         else {
             requestPermissionWithRationale();
@@ -159,23 +165,19 @@ public class MenuActivity extends AppCompatActivity {
             case PERMISSION_REQUEST_CODE:
 
                 for (int res : grantResults){
-                    // if user granted all permissions.
                     allowed = allowed && (res == PackageManager.PERMISSION_GRANTED);
                 }
 
                 break;
             default:
-                // if user not granted permissions.
                 allowed = false;
                 break;
         }
 
         if (allowed){
-            //user granted all permissions we can perform our task.
             goToBall3Activity();
         }
         else {
-            // we will give warning to user that they haven't granted permissions.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)){
                     Toast.makeText(this, "Разрешения на камеру запрещены.", Toast.LENGTH_SHORT).show();
@@ -245,8 +247,35 @@ public class MenuActivity extends AppCompatActivity {
 
 
     private void goToBall3Activity(){
-        Intent intent = new Intent(MenuActivity.this, Ball3Activity.class);
-        startActivity(intent);
+        if(!HasConnection.isOnline(MenuActivity.this)){
+            HasConnection.resultWifi = true;
+            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(MenuActivity.this);
+            dlgAlert.setMessage("У вас нет интернет соиденения! Перейдите в offline-режим или подключите интернет!!");
+            dlgAlert.setTitle("Ball3Activity: Warning!");
+            dlgAlert.setPositiveButton("ок", null);
+//            dlgAlert.setPositiveButton("Да", new DialogInterface.OnClickListener() {
+//                public void onClick(DialogInterface dialog, int which) {
+//                    Intent intent = new Intent(MenuActivity.this, Ball3Activity.class);
+//                    try {
+//                        MenuActivity.this.finish();
+//                        intent.putExtra("isOffline", true);
+//                        startActivity(intent);
+//                    }catch (Exception e){}
+//                }
+//            });
+//            dlgAlert.setNegativeButton("Нет", null);
+//                dlgAlert.setCancelable(false);
+            dlgAlert.create().show();
+        }else {
+            Intent intent = new Intent(MenuActivity.this, Ball3Activity.class);
+            try {
+                this.finish();
+                intent.putExtra("online", true);
+                startActivity(intent);
+            }catch (Exception e){}
+        }
+
     }
+
 
 }

@@ -21,18 +21,15 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Chronometer;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -50,121 +47,98 @@ import java.util.Calendar;
 
 
 public class Ball3Activity extends AppCompatActivity implements CvCameraViewListener2, SoundPool.OnLoadCompleteListener {
-    private static final String  TAG = "OCVSample::Activity";
     private CameraBridgeViewBase mOpenCvCameraView;
 
     private final int hitTheTarget = 50;
 
-    private int     widthDisplay;
-    private int     heigtDisplay;
-    private int     widthCam;
-    private int     heigtCam;
-//    private ImageView   imAim;
+    private int widthDisplay;
+    private int heigtDisplay;
+    private int widthCam;
+    private int heigtCam;
 
-    private boolean         onBtFire = false;
-    private Chronometer     chronometer;
-    private long            stopTime;
+    private boolean onBtFire = false;
+    private Chronometer chronometer;
+    private long stopTime;
 
 
-    private TextView    textViewFire;
-    private int         logViewFire = 0;
-    private int         logViewShots = 0;
+    private TextView textViewFire;
+    private int logViewFire = 0;
+    private int logViewShots = 0;
 
     private boolean start = false;
 
-    private int                 mViewMode;
-    private static final int    VIEW_MODE_RGBA   = 0;
-    private static final int    VIEW_MODE_GRAY   = 1;
-    private static final int    VIEW_MODE_CANNY  = 2;
-    private static final int    VIEW_MODE_FEATURES = 5;
+    private int mViewMode;
+    private static final int VIEW_MODE_RGBA = 0;
+    private static final int VIEW_MODE_GRAY = 1;
+    private static final int VIEW_MODE_CANNY = 2;
+    private static final int VIEW_MODE_FEATURES = 5;
 
-    private Mat          mRgba;
-    private Mat          mIntermediateMat;
-    private Mat          mGray;
-    private Mat          mHSV;
-    private Mat          mThresholded;
-    private Mat          mThresholded2;
-    private Mat          array255;
-    private Mat          distance;
+    private Mat mRgba;
+    private Mat mIntermediateMat;
+    private Mat mGray;
+    private Mat mHSV;
+    private Mat mThresholded;
+    private Mat mThresholded2;
+    private Mat array255;
+    private Mat distance;
 
-    private FirebaseAuth        mAuth;
-    private DatabaseReference   myRef;
+    private FirebaseAuth mAuth;
+    private DatabaseReference myRef;
+    FirebaseUser user = mAuth.getInstance().getCurrentUser();//
+    UserData userData;
 
-    FirebaseUser    user = mAuth.getInstance().getCurrentUser();//
-    UserData        userData;
+    SoundPool sp;
+    int soundIdShot;
+    final int MAX_STREAMS = 5;
 
-    SoundPool   sp;
-    int         soundIdShot;
-    final int   MAX_STREAMS = 5;
-
-   private long millsVibrator = 200L; //two milisecond in vibration
-   private Vibrator vibrator;
+    private long millsVibrator = 200L; //two milisecond in vibration
+    private Vibrator vibrator;
 
     SharedPreferences myPreferences;
     SharedPreferences.Editor myEditor;
 
-    // Initialize OpenCV manager.
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    Log.i(TAG, "OpenCV loaded successfully");
-                    mOpenCvCameraView.enableView();
-                    break;
-                }
-                default: {
-                    super.onManagerConnected(status);
-                    break;
-                }
-            }
-        }
-    };
+    private boolean isOffline = false;
+    private boolean online = false;
 
 
     @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        // если хотим, чтобы приложение постоянно имело портретную ориентацию
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
-        // если хотим, чтобы приложение было полноэкранным
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
-
-
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.surface_view);
 
-
-
-        mOpenCvCameraView = (CameraBridgeViewBase)findViewById(R.id.view);
+        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
-        mOpenCvCameraView.setMaxFrameSize(500,500);
+        mOpenCvCameraView.setMaxFrameSize(500, 500);
         mOpenCvCameraView.setCvCameraViewListener(this);
 
-//        imAim = (ImageView)findViewById(R.id.aimLay);
-        textViewFire = (TextView)findViewById(R.id.textViweFire);
-//        textShots = (TextView)findViewById(R.id.textViweShots);
 
-///////////////////////
-        myRef = FirebaseDatabase.getInstance().getReference();
+        textViewFire = (TextView) findViewById(R.id.textViweFire);
+
+
         DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
         String datePush = df.format(Calendar.getInstance().getTime());
-        df = new SimpleDateFormat("HH:mm");
-        String timePush = df.format(Calendar.getInstance().getTime());
-        userData = new UserData(user.getEmail(), datePush, 0, logViewShots);
-///////////////////////
-        chronometer = (Chronometer)findViewById(R.id.timerChononom);
+        if (user != null) {
+            myRef = FirebaseDatabase.getInstance().getReference();
+            userData = new UserData(user.getEmail(), datePush, 0, logViewShots);
+        } else {
+            userData = new UserData("offline", datePush, 0, logViewShots);
+        }
+
+
+        chronometer = (Chronometer) findViewById(R.id.timerChononom);
         chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
             public void onChronometerTick(Chronometer chronometer) {
                 long elapsedMillis = SystemClock.elapsedRealtime()
                         - chronometer.getBase();
 
-                if (elapsedMillis > 60000 && elapsedMillis <61000) {
+                if (elapsedMillis > 60000 && elapsedMillis < 61000) {
                     String strElapsedMillis = "Прошло больше 60 секунд. Поторопись!!!";
                     Toast.makeText(getApplicationContext(),
                             strElapsedMillis, Toast.LENGTH_SHORT)
@@ -179,7 +153,9 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         widthDisplay = sizeDisplay.x;
         heigtDisplay = sizeDisplay.y;
 
-        AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+        isOffline = getIntent().getBooleanExtra("isOffline", false);
+        online = getIntent().getBooleanExtra("online", false);
+        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
         dlgAlert.setMessage("Сейчас будет стартовать время для стрельбы. Вы готовы?");
         dlgAlert.setTitle("Ball3Activity: Warning!");
         dlgAlert.setPositiveButton("Да",
@@ -199,13 +175,15 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                     Intent intent = new Intent(Ball3Activity.this, MainActivity.class);
                     Ball3Activity.this.finish();
                     startActivity(intent);
-                }catch (Exception e){}
+                } catch (Exception ignored) {
+                }
             }
         });
         dlgAlert.setCancelable(false);
-        try{
-        dlgAlert.create().show();
-        }catch (Exception e){}
+        try {
+            dlgAlert.create().show();
+        } catch (Exception ignored) {
+        }
 
         //Sound Shot
         sp = new SoundPool(MAX_STREAMS, AudioManager.STREAM_MUSIC, 0);
@@ -216,6 +194,8 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
         //DB
         myPreferences = PreferenceManager.getDefaultSharedPreferences(Ball3Activity.this);
+
+//        isOffline = getIntent().getBooleanExtra("isOffline" , false);
     }
 
     @Override
@@ -257,14 +237,14 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 //    }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.disableView();
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         OpenCVLoader.initDebug();
         mOpenCvCameraView.enableView();
@@ -281,19 +261,19 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         mHSV = new Mat(height, width, CvType.CV_8UC4);
         mIntermediateMat = new Mat(height, width, CvType.CV_8UC4);
         mGray = new Mat(height, width, CvType.CV_8UC1);
-        array255=new Mat(height,width,CvType.CV_8UC1);
-        distance=new Mat(height,width,CvType.CV_8UC1);
-        mThresholded=new Mat(height,width,CvType.CV_8UC1);
-        mThresholded2=new Mat(height,width,CvType.CV_8UC1);
+        array255 = new Mat(height, width, CvType.CV_8UC1);
+        distance = new Mat(height, width, CvType.CV_8UC1);
+        mThresholded = new Mat(height, width, CvType.CV_8UC1);
+        mThresholded2 = new Mat(height, width, CvType.CV_8UC1);
 
 
-        widthCam = width/2;
-        heigtCam = height/2;
+        widthCam = width / 2;
+        heigtCam = height / 2;
 //        centerAimX = (widthDisplay / 2);
 //        centerAimY = (heigtDisplay / 2);
         Log.i("mOpenCvCameraViewW:", Integer.toString(width));
         Log.i("mOpenCvCameraViewH:", Integer.toString(height));
-        Log.i("widthDisplay:", Integer.toString(widthDisplay /2));
+        Log.i("widthDisplay:", Integer.toString(widthDisplay / 2));
         Log.i("heigtDisplay:", Integer.toString(heigtDisplay / 2));
 //        Log.i("centerAimX:", Float.toString(centerAimX));
 //        Log.i("centerAimY:", Float.toString(centerAimY));
@@ -308,7 +288,7 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         final int viewMode = mViewMode;
         mRgba = inputFrame.rgba();
-        if (viewMode==VIEW_MODE_RGBA) return mRgba;
+        if (viewMode == VIEW_MODE_RGBA) return mRgba;
         Mat circles = new Mat(); // No need (and don't know how) to initialize it.
         // The function later will do it... (to a 1*N*CV_32FC3)
         array255.setTo(new Scalar(255));
@@ -319,13 +299,13 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
 
         // One way to select a range of colors by Hue
-        Imgproc.cvtColor(mRgba, mHSV, Imgproc.COLOR_RGB2HSV,4);
-        if (viewMode==VIEW_MODE_GRAY) return mHSV;
+        Imgproc.cvtColor(mRgba, mHSV, Imgproc.COLOR_RGB2HSV, 4);
+        if (viewMode == VIEW_MODE_GRAY) return mHSV;
         Core.inRange(mHSV, hsv_min, hsv_max, mThresholded);
         Core.inRange(mHSV, hsv_min2, hsv_max2, mThresholded2);
         Core.bitwise_or(mThresholded, mThresholded2, mThresholded);
 
-          //don't know this is need
+        //don't know this is need
 /////////////////////////////////////////////////////////////////////
 //        Core.split(mHSV, lhsv); // We get 3 2D one channel Mats
 //        Mat S = lhsv.get(1);
@@ -336,16 +316,15 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 //        V.convertTo(V, CvType.CV_32F);
 //        Core.magnitude(S, V, distance);
 /////////////////////////////////////////////////////////////////////
-        Core.inRange(distance,new Scalar(0.0), new Scalar(200.0), mThresholded2);
+        Core.inRange(distance, new Scalar(0.0), new Scalar(200.0), mThresholded2);
         Core.bitwise_and(mThresholded, mThresholded2, mThresholded);
 
 
-
         // Apply the Hough Transform to find the circles
-        Imgproc.GaussianBlur(mThresholded, mThresholded, new Size(9,9),0,0);
-        Imgproc.HoughCircles(mThresholded, circles, Imgproc.CV_HOUGH_GRADIENT, 2, mThresholded.height()/4, 500, 50, 0, 0);
+        Imgproc.GaussianBlur(mThresholded, mThresholded, new Size(9, 9), 0, 0);
+        Imgproc.HoughCircles(mThresholded, circles, Imgproc.CV_HOUGH_GRADIENT, 2, mThresholded.height() / 4, 500, 50, 0, 0);
 
-        if (viewMode==VIEW_MODE_CANNY){
+        if (viewMode == VIEW_MODE_CANNY) {
 //            Imgproc.Canny(mThresholded, mThresholded, 500, 250); // This is not needed.
             // It is just for display
             Imgproc.cvtColor(mThresholded, mRgba, Imgproc.COLOR_GRAY2RGB, 4);
@@ -353,19 +332,19 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         }
         //int cols = circles.cols();
         int rows = circles.rows();
-        int elemSize = (int)circles.elemSize(); // Returns 12 (3 * 4bytes in a float)
-        float[] data2 = new float[rows * elemSize/4];
+        int elemSize = (int) circles.elemSize(); // Returns 12 (3 * 4bytes in a float)
+        float[] data2 = new float[rows * elemSize / 4];
 
-        if (data2.length>0){
+        if (data2.length > 0) {
             circles.get(0, 0, data2); // Points to the first element and reads the whole thing
             // into data2
-            for(int i=0; i<data2.length; i=i+3) {
-                Point center= new Point(data2[i], data2[i+1]);
-                Imgproc.ellipse( mRgba, center, new Size((double)data2[i+2], (double)data2[i+2]), 0, 0, 360, new Scalar( 255, 0, 255 ), 4, 8, 0 );
+            for (int i = 0; i < data2.length; i = i + 3) {
+                Point center = new Point(data2[i], data2[i + 1]);
+                Imgproc.ellipse(mRgba, center, new Size((double) data2[i + 2], (double) data2[i + 2]), 0, 0, 360, new Scalar(255, 0, 255), 4, 8, 0);
 
-                if((Math.pow((center.x - widthCam ),2) + Math.pow((center.y - heigtCam),2)) < Math.pow(data2[i+2],2)){
+                if ((Math.pow((center.x - widthCam), 2) + Math.pow((center.y - heigtCam), 2)) < Math.pow(data2[i + 2], 2)) {
 
-                    if(onBtFire){
+                    if (onBtFire) {
                         logViewFire = logViewFire + 1;
                         vibrator.vibrate(millsVibrator);
                         runOnUiThread(new Runnable() {
@@ -374,57 +353,28 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                                 textViewFire.setText("" + logViewFire);
                             }
                         });
-                        if(logViewFire == 10){
+                        if (logViewFire == hitTheTarget) {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     userData.Time = (SystemClock.elapsedRealtime() - chronometer.getBase()) / 1000;
                                     userData.Shorts = logViewShots;
 
-//                                    String loginDB = myPreferences.getString("LOGIN", "unknown");
                                     long timeDB = myPreferences.getLong("TIME", 0);
 
-
-                                    if (userData.Time > timeDB && timeDB!= 0) {
-                                            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(Ball3Activity.this);
-                                                    dlgAlert.setMessage("Ваш результат хуже прошлого, желаете перезаписать его?(после продолжения можете пострелять просто так)");
-                                                    dlgAlert.setTitle("Ball3Activity: Result!");
-                                                    dlgAlert.setPositiveButton("Да", new DialogInterface.OnClickListener() {
-                                                        public void onClick(DialogInterface dialog, int which) {
-                                                            pushDataInFirebase();
-                                                        }
-                                                    });
-                                                    dlgAlert.setNegativeButton("Нет", new DialogInterface.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(DialogInterface dialog, int which) {
-                                                            Intent intent = new Intent(Ball3Activity.this, MainActivity.class);
-                                                            finish();
-                                                            startActivity(intent);
-                                                }
-                                            });
-                                            dlgAlert.setCancelable(false);
-                                            dlgAlert.create().show();
-//                                        }
+                                    HasConnection.OnlineWifi();
+                                    try {
+                                        Thread.sleep(1520);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    if(online && !HasConnection.resultWifi){
+                                        isOffline = true;
+                                    }
+                                    if(!isOffline) {
+                                        resultViewOnline(timeDB);
                                     }else{
-                                        pushDataInFirebase();
-                                        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(Ball3Activity.this);
-                                        dlgAlert.setMessage("Поздравляем, вы попали " + hitTheTarget + " из " + hitTheTarget + ", результат будет записан. Желаете пострелять дальше за просто так?");
-                                        dlgAlert.setTitle("Ball3Activity: Result!");
-                                        dlgAlert.setPositiveButton("Да", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int which) {
-
-                                            }
-                                        });
-                                        dlgAlert.setNegativeButton("Я наигрался, спасибо", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                Intent intent = new Intent(Ball3Activity.this, MainActivity.class);
-                                                finish();
-                                                startActivity(intent);
-                                            }
-                                        });
-                                        dlgAlert.setCancelable(false);
-                                        dlgAlert.create().show();
+                                        resultViewOffline(timeDB);
                                     }
 
                                 }
@@ -432,12 +382,9 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
                         }
                         onBtFire = false;
                     }
-                }else{
+                } else {
                     onBtFire = false;
                 }
-
-                // log coordination
-               //Log.i("MyLog: ", "X: "+ centerAimX + "; Y: " + centerAimY + " || width = " + center.x * widthCam + "; Heugh = " + center.y * heigtCam + " || R = " + (double)data2[i+2] + "|| Size =" + new Size((double)data2[i+2], (double)data2[i+2]));
             }
         }
         return mRgba;
@@ -445,32 +392,26 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
 
 
     public void onClickFire(View view) {
-        if(!HasConnection.isOnline(Ball3Activity.this)){
-            Toast.makeText(Ball3Activity.this, "Нет интернет соиденения",
-                    Toast.LENGTH_SHORT).show();
-        }
-        if(start) {
+        if (start) {
             sp.play(soundIdShot, 1, 1, 0, 0, 1);
-            logViewShots = logViewShots +1;
-//            textShots.setText(logViewShots);
+            logViewShots = logViewShots + 1;
         }
-        if(!onBtFire){
+        if (!onBtFire) {
             onBtFire = true;
         }
     }
 
-    public void pushDataInFirebase(){
-        //myRef.child(user.getUid()).child("data/" + datePush + "/" + timePush).setValue(userData);
-        //myRef.child(user.getUid()).child("/").setValue(userData);
-        myRef.child(user.getUid()).child("/shots").setValue(userData.Shorts);
-        myRef.child(user.getUid()).child("/Time").setValue(userData.Time);
-        myRef.child(user.getUid()).child("/date").setValue(userData.date);
-        myRef.child(user.getUid()).child("/login").setValue(userData.userName);
-
+    public void pushDataInFirebase() {
         myEditor = myPreferences.edit();
-//        myEditor.putString("LOGIN", userData.userName);
         myEditor.putLong("TIME", userData.Time);
         myEditor.commit();
+
+        if (!isOffline) {
+            myRef.child(user.getUid()).child("/shots").setValue(userData.Shorts);
+            myRef.child(user.getUid()).child("/Time").setValue(userData.Time);
+            myRef.child(user.getUid()).child("/date").setValue(userData.date);
+            myRef.child(user.getUid()).child("/login").setValue(userData.userName);
+        }
     }
 
     @Override
@@ -504,4 +445,100 @@ public class Ball3Activity extends AppCompatActivity implements CvCameraViewList
         dlgAlert.setCancelable(false);
         dlgAlert.create().show();
     }
+
+
+    private void resultViewOnline(long timeDB) {
+        if (userData.Time > timeDB && timeDB != 0) {
+            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(Ball3Activity.this);
+            dlgAlert.setMessage("Ваш результат хуже прошлого, желаете перезаписать его?" +
+                    "(после продолжения можете пострелять просто так)");
+            dlgAlert.setTitle("Ball3Activity: Result!");
+            dlgAlert.setPositiveButton("Да", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    pushDataInFirebase();
+                }
+            });
+            dlgAlert.setNegativeButton("Нет", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Ball3Activity.this, MainActivity.class);
+                    finish();
+                    startActivity(intent);
+                }
+            });
+            dlgAlert.setCancelable(false);
+            dlgAlert.create().show();
+//                                        }
+        } else {
+            pushDataInFirebase();
+            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(Ball3Activity.this);
+            dlgAlert.setMessage("Поздравляем, ваш результат будет записан в базу. Желаете пострелять дальше за просто так?");
+            dlgAlert.setTitle("Ball3Activity: Result!");
+            dlgAlert.setPositiveButton("Да", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+            dlgAlert.setNegativeButton("Я наигрался, спасибо", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Ball3Activity.this, MainActivity.class);
+                    finish();
+                    startActivity(intent);
+                }
+            });
+            dlgAlert.setCancelable(false);
+            dlgAlert.create().show();
+        }
+    }
+
+    private void resultViewOffline(long timeDB){
+        if (userData.Time > timeDB && timeDB != 0) {
+            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(Ball3Activity.this);
+            dlgAlert.setMessage("У вас нет интернет соиденения. Покажите кому-то свой результат\nВаш результат: " + userData.Time + " сек.\n" +
+                    "Ваш прошлый результат: " + timeDB +" сек.\n" +
+                    "Желаете перезаписать его?(после продолжения можете пострелять просто так)");
+            dlgAlert.setTitle("Ball3Activity: Result!");
+            dlgAlert.setPositiveButton("Да", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    pushDataInFirebase();
+                }
+            });
+            dlgAlert.setNegativeButton("Нет", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Ball3Activity.this, MainActivity.class);
+                    Ball3Activity.this.finish();
+                    startActivity(intent);
+                }
+            });
+            dlgAlert.setCancelable(false);
+            dlgAlert.create().show();
+//                                        }
+        } else {
+            pushDataInFirebase();
+            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(Ball3Activity.this);
+            dlgAlert.setMessage("У вас нет интернет соиденения. Покажите кому-то свой результат\nПоздравляем Ваш результат: " + userData.Time + " сек. Желаете пострелять дальше за просто так?");
+            dlgAlert.setTitle("Ball3Activity: Result!");
+            dlgAlert.setPositiveButton("Да", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+            dlgAlert.setNegativeButton("Я наигрался, спасибо", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Ball3Activity.this, MainActivity.class);
+                    Ball3Activity.this.finish();
+                    startActivity(intent);
+                }
+            });
+            dlgAlert.setCancelable(false);
+            dlgAlert.create().show();
+        }
+    }
+
+
+
+
 }

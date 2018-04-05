@@ -11,6 +11,7 @@
     <string-array name="ListMainMenu">
         <item>Старт</item>
         <item>Статистика</item>
+        <item>Мой результат</item>
         <item>Выйти из аккаунта</item>
     </string-array>
 </resources>
